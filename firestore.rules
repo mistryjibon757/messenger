@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// SETUP: after creating your two Firebase Authentication users, replace the
+// two placeholder strings below with their real UIDs (Firebase Console >
+// Authentication > Users > "User UID" column), then paste this whole file
+// into Firebase Console > Firestore Database > Rules > Publish.
+//
+// This is the REAL enforcement layer. Even if the app's UI somehow let a
+// third account through, these rules would still block every read and write.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isPartner() {
+      return request.auth != null &&
+        request.auth.uid in [
+          "REPLACE_WITH_UID_1",
+          "REPLACE_WITH_UID_2"
+        ];
+    }
+
+    // Each partner can read both profiles (needed to show each other's name)
+    // but can only ever write their own.
+    match /users/{userId} {
+      allow read: if isPartner();
+      allow write: if isPartner() && request.auth.uid == userId;
+    }
+
+    // Deny everything else by default. Every future collection (chats,
+    // media, diary, vault...) must get its own explicit rule above this.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
