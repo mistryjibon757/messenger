@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: "AIzaSyCloBR8bcPgeWAkung96NOGpdUOAIMUNS0"
+          VITE_FIREBASE_AUTH_DOMAIN: "messenger-f8b8b.firebaseapp.com"
+          VITE_FIREBASE_PROJECT_ID: "messenger-f8b8b"
+          VITE_FIREBASE_STORAGE_BUCKET: "messenger-f8b8b.firebasestorage.app"
+          VITE_FIREBASE_MESSAGING_SENDER_ID: "838939822965"
+          VITE_FIREBASE_APP_ID: "1:838939822965:web:e46b18f7c27d943b15213c"
+          VITE_FIREBASE_MEASUREMENT_ID: "G-LP0D326VZ1"
+          VITE_ALLOWED_UID_1: "rYsEw8AevUhJIO3CKHQncFXP9yw2"
+          VITE_ALLOWED_UID_2: "wmZpVtzMVbVjjpaoxjfzDG8nam82"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
